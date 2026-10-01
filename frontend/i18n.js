@@ -20,7 +20,7 @@ export const translations = {
     now: "Now",
     directions_title: "Directions",
     your_visit: "Your Visit",
-    chat_title: "Assistant Chat",
+    chat_title: "Gemini AI Nurse Assistant",
     accessible_route: "Step-free accessible route",
     somewhere_else: "I'm somewhere else",
     estimated_wait: "Estimated wait",
@@ -38,7 +38,7 @@ export const translations = {
     where_next: "Where do I go next?",
     whats_pending: "What's pending?",
     how_long_wait: "How long is the wait?",
-    type_message: "Ask a question...",
+    type_message: "Ask the Nurse AI Doll...",
     send: "Send",
     speech_lang: "en-US"
   },
@@ -63,7 +63,7 @@ export const translations = {
     now: "अभी",
     directions_title: "दिशा-निर्देश",
     your_visit: "आपकी यात्रा",
-    chat_title: "सहायक चैट",
+    chat_title: "जेमिनी एआई नर्स सहायक (AI Doll)",
     accessible_route: "सीढ़ी-मुक्त सुगम मार्ग",
     somewhere_else: "मैं कहीं और हूँ",
     estimated_wait: "अनुमानित प्रतीक्षा समय",
@@ -81,9 +81,52 @@ export const translations = {
     where_next: "मुझे आगे कहाँ जाना है?",
     whats_pending: "क्या लंबित है?",
     how_long_wait: "इंतजार कितना लंबा है?",
-    type_message: "सवाल पूछें...",
+    type_message: "नर्स एआई गुड़िया से सवाल पूछें...",
     send: "भेजें",
     speech_lang: "hi-IN"
+  },
+  ta: {
+    hospital_name: "சிட்டி ஜெனரல் மருத்துவமனை",
+    welcome: "சிட்டி ஜெனரல் மருத்துவமனைக்கு வரவேற்கிறோம்",
+    select_visit_type: "தொடங்க உங்கள் வருகை வகையைத் தேர்ந்தெடுக்கவும்:",
+    appointment: "எனக்கு முன்அனுமதி (Appointment) உள்ளது",
+    walkin: "நேரடி வருகை (Walk-in)",
+    directions: "வழிமுறைகள் மட்டும் தேவை",
+    emergency: "அவசர சிகிச்சை (Emergency)",
+    emergency_title: "அவசர உதவி",
+    emergency_desc: "தரைத்தளத்தில் உள்ள அவசர சிகிச்சை அறைக்கு நேரடியாக செல்லவும்.",
+    call_staff: "ஊழியர்களை அழைக்கவும்",
+    enter_phone: "தொலைபேசி எண்ணை உள்ளிடவும்",
+    enter_name: "உங்கள் முழு பெயரை உள்ளிடவும்",
+    enter_otp: "OTP குறியீட்டை உள்ளிடவும்",
+    verify: "சரிபார்த்து தொடங்கவும்",
+    demo_otp_note: "மாதிரி OTP: 123456",
+    apt_id_prompt: "முன்அனுமதி எண் (APT-1001)",
+    current_step: "தற்போதைய நிலை",
+    now: "இப்போது",
+    directions_title: "வழிமுறைகள்",
+    your_visit: "உங்கள் வருகை திட்டம்",
+    chat_title: "ஜெமினி AI செவிலியர் உதவியாளர் (AI Doll)",
+    accessible_route: "படிக்கட்டுகள் இல்லாத பாதை",
+    somewhere_else: "நான் வேறு இடத்தில் உள்ளேன்",
+    estimated_wait: "எதிர்பார்க்கப்படும் காத்திருப்பு நேரம்",
+    please_go_in: "தயவுசெய்து உள்ளே செல்லவும்",
+    talk_to_staff: "ஊழியரிடம் பேசுங்கள்",
+    doctor: "மருத்துவர்",
+    room: "அறை",
+    floor: "தளம்",
+    ground_floor: "தரைத்தளம்",
+    first_floor: "முதல் தளம்",
+    discharge_title: "வருகை முடிந்தது",
+    discharge_desc: "மருத்துவமனைக்கு வருகை தந்தமைக்கு நன்றி. உங்கள் கருத்தைப் பதிவு செய்யவும்:",
+    submit_feedback: "சமர்ப்பி",
+    find_doctor: "மருத்துவரைத் தேடுங்கள்",
+    where_next: "அடுத்து எங்கு செல்ல வேண்டும்?",
+    whats_pending: "நிலுவையில் உள்ளவை என்ன?",
+    how_long_wait: "காத்திருப்பு நேரம் எவ்வளவு?",
+    type_message: "செவிலியர் AI பொம்மையிடம் கேளுங்கள்...",
+    send: "அனுப்பு",
+    speech_lang: "ta-IN"
   }
 };
 
@@ -101,4 +144,8 @@ export function getLanguage() {
 
 export function t(key) {
   return translations[currentLang]?.[key] || translations["en"]?.[key] || key;
+}
+
+export function getSpeechLang() {
+  return translations[currentLang]?.speech_lang || "en-US";
 }

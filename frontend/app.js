@@ -1,6 +1,7 @@
 import { api } from './api.js';
-import { t, setLanguage, getLanguage } from './i18n.js';
+import { t, setLanguage, getLanguage, getSpeechLang } from './i18n.js';
 import { HospitalMap } from './map.js';
+import { generateGeminiNurseResponse, getStoredGeminiKey, setStoredGeminiKey } from './gemini.js';
 
 let currentVisit = null;
 let currentTasks = [];
@@ -16,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const data = await api.getNodes();
     graphNodes = data.nodes;
     window.hospitalMap.init(data.nodes, data.edges);
-    populateSomewhereElseDropdown(data.nodes);
+    populateLocationDropdowns(data.nodes);
   } catch (e) {
     console.error("Failed to load map graph data:", e);
   }
@@ -31,6 +32,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (currentVisit) refreshPatientState();
     });
   }
+
+  // Bind Gemini API Key config button
+  document.getElementById("btn-gemini-key")?.addEventListener("click", () => {
+    const current = getStoredGeminiKey();
+    const key = prompt("Enter optional Gemini API Key for direct client-side Gemini AI response:", current);
+    if (key !== null) {
+      setStoredGeminiKey(key);
+      alert(key ? "Gemini API Key configured!" : "Gemini API Key cleared. Using standard rule engine.");
+    }
+  });
 
   // Bind Visit Type Selection Buttons
   document.querySelectorAll("[data-visit-type]").forEach(btn => {
@@ -55,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (currentVisit) renderCurrentTaskRoute(e.target.checked);
   });
 
-  // "I'm somewhere else" selector
+  // "Start Location" selector
   document.getElementById("location-selector")?.addEventListener("change", async (e) => {
     const newNode = e.target.value;
     if (newNode && currentVisit) {
@@ -63,6 +74,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       refreshPatientState();
     }
   });
+
+  // "Destination Location" selector
+  document.getElementById("destination-selector")?.addEventListener("change", (e) => {
+    const destNode = e.target.value;
+    if (destNode && currentVisit) {
+      renderDestinationRoute(destNode, document.getElementById("accessible-toggle")?.checked || false);
+    }
+  });
+
+  // Voice Microphone Input Button
+  document.getElementById("voice-mic-btn")?.addEventListener("click", handleVoiceMicrophoneInput);
 
   // Chat Input
   document.getElementById("chat-send-btn")?.addEventListener("click", handleSendChat);
@@ -84,7 +106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Feedback form submit
   document.getElementById("btn-submit-feedback")?.addEventListener("click", handleSubmitFeedback);
 
-  // Check if active session token exists in sessionStorage
+  // Active session check
   const token = sessionStorage.getItem("visit_token");
   if (token) {
     refreshPatientState();
@@ -108,16 +130,31 @@ function updateUILabels() {
   });
 }
 
-function populateSomewhereElseDropdown(nodes) {
-  const select = document.getElementById("location-selector");
-  if (!select) return;
-  select.innerHTML = `<option value="">${t("somewhere_else")}...</option>`;
+function populateLocationDropdowns(nodes) {
+  const startSelect = document.getElementById("location-selector");
+  const destSelect = document.getElementById("destination-selector");
+  
+  if (startSelect) {
+    startSelect.innerHTML = `<option value="">${t("somewhere_else")}...</option>`;
+  }
+  if (destSelect) {
+    destSelect.innerHTML = `<option value="">Select Destination...</option>`;
+  }
+
   Object.values(nodes).forEach(n => {
-    if (["entrance", "lobby", "helpdesk", "f1_waiting", "g_junction", "f1_junction"].includes(n.id)) {
-      const opt = document.createElement("option");
-      opt.value = n.id;
-      opt.textContent = `${n.label} (Floor ${n.floor})`;
-      select.appendChild(opt);
+    if (["entrance", "lobby", "registration", "helpdesk", "diagnostics", "billing", "pharmacy", "room_101", "room_102", "room_103", "room_104", "emergency"].includes(n.id)) {
+      if (startSelect) {
+        const opt1 = document.createElement("option");
+        opt1.value = n.id;
+        opt1.textContent = `${n.label} (Floor ${n.floor})`;
+        startSelect.appendChild(opt1);
+      }
+      if (destSelect) {
+        const opt2 = document.createElement("option");
+        opt2.value = n.id;
+        opt2.textContent = `${n.label} (Floor ${n.floor})`;
+        destSelect.appendChild(opt2);
+      }
     }
   });
 }
@@ -125,7 +162,6 @@ function populateSomewhereElseDropdown(nodes) {
 // 3D Nurse Lazy Loader
 async function initNurse3D() {
   try {
-    // Check reduced motion preference
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       showNurse2DFallback();
       return;
@@ -143,7 +179,6 @@ async function initNurse3D() {
       document.getElementById("nurse-2d-fallback")?.classList.add("hidden");
       canvas.classList.remove("hidden");
 
-      // Bind mute button
       document.getElementById("mute-btn")?.addEventListener("click", () => {
         const isMuted = nurse3d.toggleMute();
         document.getElementById("mute-icon").textContent = isMuted ? "🔇" : "🔊";
@@ -160,6 +195,45 @@ function showNurse2DFallback() {
   document.getElementById("nurse-2d-fallback")?.classList.remove("hidden");
 }
 
+// Voice Microphone Handler (Web Speech API)
+function handleVoiceMicrophoneInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert("Voice recognition is not supported in your browser.");
+    return;
+  }
+
+  const micBtn = document.getElementById("voice-mic-btn");
+  const chatInput = document.getElementById("chat-input");
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = getSpeechLang();
+
+  recognition.onstart = () => {
+    if (micBtn) micBtn.style.backgroundColor = "var(--danger-weak)";
+    if (chatInput) chatInput.placeholder = "Listening to your voice...";
+  };
+
+  recognition.onresult = (evt) => {
+    const transcript = evt.results[0][0].transcript;
+    if (chatInput) chatInput.value = transcript;
+    handleSendChat();
+  };
+
+  recognition.onerror = (evt) => {
+    console.warn("Speech recognition error:", evt.error);
+    if (micBtn) micBtn.style.backgroundColor = "var(--primary-weak)";
+    if (chatInput) chatInput.placeholder = "Ask or speak to Nurse AI Doll...";
+  };
+
+  recognition.onend = () => {
+    if (micBtn) micBtn.style.backgroundColor = "var(--primary-weak)";
+    if (chatInput) chatInput.placeholder = "Ask or speak to Nurse AI Doll...";
+  };
+
+  recognition.start();
+}
+
 // Visit Flow Handlers
 function handleVisitTypeSelect(type) {
   if (type === "emergency") {
@@ -169,7 +243,6 @@ function handleVisitTypeSelect(type) {
     showScreen("screen-directions");
     loadDirectionsList();
   } else {
-    // appointment or walkin
     window.selectedVisitType = type;
     document.getElementById("apt-id-group").style.display = (type === "appointment") ? "block" : "none";
     showScreen("screen-auth");
@@ -266,16 +339,17 @@ async function refreshPatientState() {
     showScreen("screen-patient");
     connectWebSocket(sessionStorage.getItem("visit_token"));
 
-    // Render "Now" Card
     const statusInfo = data.status_info;
     renderNowCard(statusInfo);
 
-    // Render Directions Map & Steps
     if (statusInfo.has_current_task) {
+      // Set destination selector value to current task node
+      const destSelect = document.getElementById("destination-selector");
+      if (destSelect) destSelect.value = statusInfo.target_node;
+
       renderCurrentTaskRoute(document.getElementById("accessible-toggle")?.checked || false);
     }
 
-    // Render Timeline
     renderTimeline(data.tasks);
 
   } catch (err) {
@@ -319,10 +393,9 @@ function renderNowCard(info) {
     </div>
   `;
 
-  // Speech utterance if called
   if (isCalled && nurse3d) {
     nurse3d.triggerGesture('wave');
-    nurse3d.speak(`Attention ${currentVisit.patient_name}, please go in now to ${info.target_label}.`, getLanguage() === 'hi' ? 'hi-IN' : 'en-US');
+    nurse3d.speak(`Attention ${currentVisit.patient_name}, please go in now to ${info.target_label}.`, getSpeechLang());
   }
 }
 
@@ -337,6 +410,26 @@ async function renderCurrentTaskRoute(accessible = false) {
     renderStepTextList("patient-steps", routeData.steps);
   } catch (e) {
     console.error("Failed to render route:", e);
+  }
+}
+
+async function renderDestinationRoute(destinationNodeId, accessible = false) {
+  if (!currentVisit || !destinationNodeId) return;
+  try {
+    const routeData = await api.getRoute(currentVisit.current_location_node, destinationNodeId, accessible);
+    window.hospitalMap.renderRoute(routeData);
+    renderStepTextList("patient-steps", routeData.steps);
+
+    // Speak audio route summary via Nurse AI Doll
+    if (nurse3d && routeData.path && routeData.path.length > 0) {
+      const destName = graphNodes[destinationNodeId]?.label || destinationNodeId;
+      const flName = graphNodes[destinationNodeId]?.floor === 1 ? "1st floor" : "Ground floor";
+      const spokenSummary = `Route updated to ${destName} on the ${flName}.`;
+      nurse3d.triggerGesture('point');
+      nurse3d.speak(spokenSummary, getSpeechLang());
+    }
+  } catch (e) {
+    console.error("Failed to calculate destination route:", e);
   }
 }
 
@@ -375,7 +468,7 @@ function renderTimeline(tasks) {
   }).join("");
 }
 
-// Chat functionality
+// Chat functionality with Gemini API & Audio Spoken Response
 async function handleSendChat() {
   const input = document.getElementById("chat-input");
   const msg = input.value.trim();
@@ -385,16 +478,35 @@ async function handleSendChat() {
   appendChatMessage(msg, "user");
 
   try {
-    const res = await api.sendChatMessage(msg);
-    appendChatMessage(res.reply, "bot");
+    let res = null;
 
-    // Trigger 3D nurse gesture and speech
-    if (nurse3d) {
-      if (res.gesture) nurse3d.triggerGesture(res.gesture);
-      nurse3d.speak(res.reply, getLanguage() === 'hi' ? 'hi-IN' : 'en-US');
+    if (getStoredGeminiKey()) {
+      const statusInfo = currentVisit ? (await api.getMyInfo()).status_info : {};
+      res = await generateGeminiNurseResponse(msg, {
+        patientName: currentVisit ? currentVisit.patient_name : "Patient",
+        currentStep: statusInfo.kind,
+        targetNode: statusInfo.target_node,
+        doctorName: statusInfo.doctor ? statusInfo.doctor.name : null,
+        roomLabel: statusInfo.target_label,
+        floor: statusInfo.floor,
+        waitMins: statusInfo.wait_minutes,
+        patientsAhead: statusInfo.patients_ahead,
+        lang: getLanguage()
+      });
     }
 
-    // Render card if returned
+    if (!res) {
+      res = await api.sendChatMessage(msg);
+    }
+
+    appendChatMessage(res.reply, "bot");
+
+    // Nurse AI Doll Speaks audio response
+    if (nurse3d) {
+      if (res.gesture) nurse3d.triggerGesture(res.gesture);
+      nurse3d.speak(res.reply, getSpeechLang());
+    }
+
     if (res.card && res.card.type === "route") {
       window.hospitalMap.renderRoute(res.card.data);
       renderStepTextList("patient-steps", res.card.data.steps);

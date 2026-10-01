@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>City General Hospital - Patient Journey Guide</title>
+  <title>City General Hospital - 3D Nurse AI Patient Guide</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0B6E8E">
@@ -28,9 +28,13 @@
     </a>
 
     <div style="display: flex; gap: 8px; align-items: center;">
+      <button id="btn-gemini-key" class="btn btn-secondary btn-sm" title="Configure Gemini API Key">
+        ✨ Gemini AI
+      </button>
       <select id="lang-select" class="lang-selector" aria-label="Select Language">
         <option value="en">English</option>
         <option value="hi">हिंदी (Hindi)</option>
+        <option value="ta">தமிழ் (Tamil)</option>
       </select>
     </div>
   </header>
@@ -50,7 +54,7 @@
       </div>
     </section>
 
-    <!-- SCREEN 2: Auth OTP Modal / Form -->
+    <!-- SCREEN 2: Auth OTP Form -->
     <section id="screen-auth" class="screen card hidden">
       <h2>Patient Verification</h2>
       
@@ -107,7 +111,7 @@
     <!-- SCREEN 5: Active Patient Main Screen -->
     <section id="screen-patient" class="screen hidden">
       
-      <!-- Top Assistant Panel -->
+      <!-- Top 3D Female Nurse AI Assistant Panel -->
       <div class="assistant-panel full-width">
         <div class="assistant-controls">
           <button id="mute-btn" class="icon-btn" title="Toggle Voice Mute">
@@ -120,6 +124,7 @@
             <img src="nurse2d.svg" alt="Nurse Assistant">
           </div>
         </div>
+        <div id="assistant-caption" class="assistant-caption" style="display: none;"></div>
       </div>
 
       <div class="patient-grid" style="margin-top: 16px;">
@@ -135,19 +140,29 @@
           <div id="now-card-body"></div>
         </div>
 
-        <!-- DIRECTIONS Card -->
+        <!-- DIRECTIONS & LOCATION SELECTOR Card -->
         <div class="card">
           <div class="card-header">
-            <h2 data-i18n="directions_title">Directions</h2>
+            <h2 data-i18n="directions_title">Directions & Navigation</h2>
             <label style="font-size: 13px; display: flex; align-items: center; gap: 4px;">
               <input type="checkbox" id="accessible-toggle">
               <span data-i18n="accessible_route">Step-free route</span>
             </label>
           </div>
           
-          <select id="location-selector" class="form-select" style="font-size: 14px; min-height: 38px;"></select>
+          <!-- Starting Location Selector -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 13px; color: var(--muted);">Start Location:</label>
+            <select id="location-selector" class="form-select" style="font-size: 14px; min-height: 38px;"></select>
+          </div>
 
-          <div id="map-container" class="map-container"></div>
+          <!-- Destination Location Selector -->
+          <div class="form-group" style="margin-top: 4px;">
+            <label class="form-label" style="font-size: 13px; color: var(--muted);">Destination Room / Department:</label>
+            <select id="destination-selector" class="form-select" style="font-size: 14px; min-height: 38px;"></select>
+          </div>
+
+          <div id="map-container" class="map-container" style="margin-top: 8px;"></div>
           <ul id="patient-steps" class="step-list" style="margin-top: 8px;"></ul>
         </div>
 
@@ -157,11 +172,11 @@
           <div id="timeline-container" class="timeline"></div>
         </div>
 
-        <!-- ASSISTANT CHAT Card -->
+        <!-- ASSISTANT CHAT Card with Voice Input -->
         <div class="card chat-box">
-          <h2 data-i18n="chat_title">Assistant Chat</h2>
+          <h2 data-i18n="chat_title">Gemini AI Nurse Assistant</h2>
           <div id="chat-messages" class="chat-messages">
-            <div class="msg msg-bot">Hello! I am your hospital assistant. How can I help you today?</div>
+            <div class="msg msg-bot">Hello! I am your 3D Nurse AI Doll. How can I assist your visit today?</div>
           </div>
           <div class="quick-replies">
             <button class="quick-reply-btn" data-msg="Where do I go next?" data-i18n="where_next">Where do I go next?</button>
@@ -170,7 +185,10 @@
             <button class="quick-reply-btn" data-msg="Find a doctor" data-i18n="find_doctor">Find a doctor</button>
           </div>
           <div class="chat-input-row">
-            <input type="text" id="chat-input" class="form-input" style="flex:1;" placeholder="Ask a question...">
+            <button id="voice-mic-btn" class="icon-btn" title="Tap to Speak" style="background-color: var(--primary-weak); color: var(--primary);">
+              🎙️
+            </button>
+            <input type="text" id="chat-input" class="form-input" style="flex:1;" placeholder="Ask or speak to Nurse AI Doll...">
             <button id="chat-send-btn" class="btn btn-primary" data-i18n="send">Send</button>
           </div>
         </div>
@@ -199,7 +217,6 @@
 
   <script type="module" src="app.js"></script>
 
-  <!-- PWA Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(err => console.log("SW reg failed", err));

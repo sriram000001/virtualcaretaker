@@ -1,36 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
-  <g id="nurse-2d">
-    <!-- Background Soft Shadow Circle -->
-    <ellipse cx="100" cy="225" rx="60" ry="10" fill="#D6E1E7"/>
+  <defs>
+    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <linearGradient id="cyber-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00B8D4" />
+      <stop offset="100%" stop-color="#006064" />
+    </linearGradient>
+  </defs>
+
+  <g id="futuristic-ai-doll">
+    <!-- Floating Aura Base Ring -->
+    <ellipse cx="100" cy="225" rx="55" ry="8" fill="none" stroke="#00E5FF" stroke-width="2" filter="url(#neon-glow)"/>
+    <ellipse cx="100" cy="225" rx="35" ry="5" fill="#00E5FF" opacity="0.3"/>
+
+    <!-- Futuristic Cyber Body -->
+    <path d="M 55 160 C 55 120 145 120 145 160 L 135 215 L 65 215 Z" fill="url(#cyber-body)" stroke="#00E5FF" stroke-width="1.5"/>
     
-    <!-- Body / Scrubs -->
-    <path d="M 50 160 C 50 125 150 125 150 160 L 140 220 L 60 220 Z" fill="#0B6E8E"/>
-    
-    <!-- Collar / V-Neck -->
-    <polygon points="100,145 82,125 118,125" fill="#E4F1F6"/>
+    <!-- Chest Glowing Emblem -->
+    <rect x="97" y="145" width="6" height="20" fill="#00FFCC" filter="url(#neon-glow)"/>
+    <rect x="90" y="152" width="20" height="6" fill="#00FFCC" filter="url(#neon-glow)"/>
 
-    <!-- Neck -->
-    <rect x="90" y="115" width="20" height="15" rx="3" fill="#FFDBAC"/>
+    <!-- Neck Tech Ring -->
+    <rect x="88" y="115" width="24" height="12" rx="4" fill="#0F2A3D" stroke="#00E5FF" stroke-width="1.5"/>
 
-    <!-- Head -->
-    <circle cx="100" cy="90" r="30" fill="#FFDBAC"/>
+    <!-- Metallic Head -->
+    <circle cx="100" cy="90" r="30" fill="#E0F7FA" stroke="#00E5FF" stroke-width="1.5"/>
 
-    <!-- Hair -->
-    <path d="M 70 85 C 70 60 130 60 130 85 C 120 70 80 70 70 85 Z" fill="#4A3525"/>
+    <!-- Cyber Hair / Headpiece -->
+    <path d="M 70 85 C 70 55 130 55 130 85 C 120 68 80 68 70 85 Z" fill="#004D40"/>
 
-    <!-- Face details -->
-    <!-- Eyes -->
-    <circle cx="90" cy="90" r="3" fill="#12262E"/>
-    <circle cx="110" cy="90" r="3" fill="#12262E"/>
-    
-    <!-- Smile -->
-    <path d="M 93 102 Q 100 108 107 102" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"/>
+    <!-- Glowing Sci-Fi Visor -->
+    <rect x="74" y="82" width="52" height="14" rx="4" fill="#00E5FF" filter="url(#neon-glow)"/>
+    <circle cx="88" cy="89" r="3" fill="#00FFCC"/>
+    <circle cx="112" cy="89" r="3" fill="#00FFCC"/>
 
-    <!-- Nurse Cap -->
-    <path d="M 75 68 Q 100 50 125 68 L 120 62 Q 100 48 80 62 Z" fill="#FFFFFF" stroke="#D6E1E7" stroke-width="1"/>
-    
-    <!-- Red Cross on Cap -->
-    <rect x="97" y="55" width="6" height="10" fill="#B42318"/>
-    <rect x="95" y="57" width="10" height="6" fill="#B42318"/>
+    <!-- Smile Line -->
+    <path d="M 94 105 Q 100 110 106 105" fill="none" stroke="#00FFCC" stroke-width="2" stroke-linecap="round"/>
   </g>
 </svg>

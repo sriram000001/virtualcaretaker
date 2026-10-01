@@ -15,12 +15,9 @@ export class HospitalMap {
 
   renderRoute(routeData) {
     this.currentRoute = routeData;
-
-    // Determine default active floor (start node floor)
     if (routeData && routeData.path && routeData.path.length > 0) {
       this.activeFloor = routeData.path[0].floor;
     }
-
     this.draw();
   }
 
@@ -33,10 +30,6 @@ export class HospitalMap {
   draw() {
     if (!this.container) return;
 
-    const floorNodes = Object.values(this.nodes).filter(n => n.floor === this.activeFloor);
-    const floorNodeIds = new Set(floorNodes.map(n => n.id));
-
-    // Floor tabs if route spans both floors or by default
     let html = `
       <div class="floor-tabs">
         <button class="floor-tab ${this.activeFloor === 0 ? 'active' : ''}" onclick="window.hospitalMap.setFloor(0)">
@@ -50,14 +43,11 @@ export class HospitalMap {
         <rect width="1000" height="600" fill="#F4F7F9"/>
     `;
 
-    // Static Floor Layout Backgrounds & Room Outlines
     if (this.activeFloor === 0) {
       html += `
-        <!-- Corridors & Walls -->
         <rect x="50" y="50" width="900" height="500" fill="none" stroke="#9FB3BD" stroke-width="4" rx="8"/>
         <path d="M 500 560 L 500 130 M 230 430 L 880 430 M 230 280 L 780 280" stroke="#E4F1F6" stroke-width="40" stroke-linecap="round"/>
         
-        <!-- Room Rectangles -->
         <rect x="20" y="510" width="120" height="70" fill="#EEF3F6" stroke="#9FB3BD" stroke-width="2" rx="4"/>
         <text x="80" y="550" font-size="13" font-weight="500" fill="#12262E" text-anchor="middle">Emergency</text>
 
@@ -87,7 +77,6 @@ export class HospitalMap {
       `;
     } else {
       html += `
-        <!-- 1st Floor Layout -->
         <rect x="50" y="50" width="900" height="500" fill="none" stroke="#9FB3BD" stroke-width="4" rx="8"/>
         <path d="M 500 130 L 500 450 M 320 300 L 680 300 M 230 200 L 320 300 L 230 400 M 770 200 L 680 300 L 770 400" stroke="#E4F1F6" stroke-width="40" stroke-linecap="round"/>
 
@@ -114,7 +103,6 @@ export class HospitalMap {
       `;
     }
 
-    // Draw active route segments on this floor
     if (this.currentRoute && this.currentRoute.path) {
       const pathNodes = this.currentRoute.path;
       let segments = [];
@@ -133,7 +121,6 @@ export class HospitalMap {
       }
       if (currentSeg.length > 0) segments.push(currentSeg);
 
-      // Render route lines
       for (const seg of segments) {
         if (seg.length > 1) {
           const points = seg.map(n => `${n.x},${n.y}`).join(" ");
@@ -143,7 +130,6 @@ export class HospitalMap {
         }
       }
 
-      // Draw start dot & end pin if present on this floor
       const startNode = pathNodes[0];
       const endNode = pathNodes[pathNodes.length - 1];
 
