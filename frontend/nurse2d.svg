@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+  <g id="nurse-2d">
+    <!-- Background Soft Shadow Circle -->
+    <ellipse cx="100" cy="225" rx="60" ry="10" fill="#D6E1E7"/>
+    
+    <!-- Body / Scrubs -->
+    <path d="M 50 160 C 50 125 150 125 150 160 L 140 220 L 60 220 Z" fill="#0B6E8E"/>
+    
+    <!-- Collar / V-Neck -->
+    <polygon points="100,145 82,125 118,125" fill="#E4F1F6"/>
+
+    <!-- Neck -->
+    <rect x="90" y="115" width="20" height="15" rx="3" fill="#FFDBAC"/>
+
+    <!-- Head -->
+    <circle cx="100" cy="90" r="30" fill="#FFDBAC"/>
+
+    <!-- Hair -->
+    <path d="M 70 85 C 70 60 130 60 130 85 C 120 70 80 70 70 85 Z" fill="#4A3525"/>
+
+    <!-- Face details -->
+    <!-- Eyes -->
+    <circle cx="90" cy="90" r="3" fill="#12262E"/>
+    <circle cx="110" cy="90" r="3" fill="#12262E"/>
+    
+    <!-- Smile -->
+    <path d="M 93 102 Q 100 108 107 102" fill="none" stroke="#B42318" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Nurse Cap -->
+    <path d="M 75 68 Q 100 50 125 68 L 120 62 Q 100 48 80 62 Z" fill="#FFFFFF" stroke="#D6E1E7" stroke-width="1"/>
+    
+    <!-- Red Cross on Cap -->
+    <rect x="97" y="55" width="6" height="10" fill="#B42318"/>
+    <rect x="95" y="57" width="10" height="6" fill="#B42318"/>
+  </g>
+</svg>

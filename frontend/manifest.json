@@ -1,0 +1,16 @@
+{
+  "name": "City General Hospital Patient Guide",
+  "short_name": "Hospital Guide",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F7F9",
+  "theme_color": "#0B6E8E",
+  "description": "3D Interactive Hospital Patient Journey & Indoor Navigation Guide",
+  "icons": [
+    {
+      "src": "nurse2d.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

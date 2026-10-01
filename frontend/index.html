@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City General Hospital - Patient Journey Guide</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0B6E8E">
+  
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <a href="#" class="brand">
+      <svg class="brand-cross" viewBox="0 0 24 24">
+        <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z" fill="currentColor"/>
+      </svg>
+      <span data-i18n="hospital_name">City General Hospital</span>
+    </a>
+
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <select id="lang-select" class="lang-selector" aria-label="Select Language">
+        <option value="en">English</option>
+        <option value="hi">हिंदी (Hindi)</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SCREEN 1: Welcome & Visit Type Selector -->
+    <section id="screen-welcome" class="screen card">
+      <h1 data-i18n="welcome">Welcome to City General Hospital</h1>
+      <p class="text-muted" data-i18n="select_visit_type">Select your visit type to begin:</p>
+      
+      <div class="btn-group" style="flex-direction: column; gap: 12px; margin-top: 12px;">
+        <button class="btn btn-primary" data-visit-type="appointment" data-i18n="appointment">I have an appointment</button>
+        <button class="btn btn-secondary" data-visit-type="walkin" data-i18n="walkin">Walk-in visit</button>
+        <button class="btn btn-secondary" data-visit-type="directions" data-i18n="directions">Just need directions</button>
+        <button class="btn btn-danger" data-visit-type="emergency" data-i18n="emergency">Emergency</button>
+      </div>
+    </section>
+
+    <!-- SCREEN 2: Auth OTP Modal / Form -->
+    <section id="screen-auth" class="screen card hidden">
+      <h2>Patient Verification</h2>
+      
+      <div id="otp-step-1" class="form-group">
+        <label class="form-label" data-i18n="enter_phone">Enter phone number</label>
+        <input type="tel" id="auth-phone" class="form-input" placeholder="e.g. 9876543210" value="9876543210">
+        
+        <label class="form-label" style="margin-top: 8px;" data-i18n="enter_name">Enter your full name</label>
+        <input type="text" id="auth-name" class="form-input" placeholder="e.g. Asha Kumar" value="Asha Kumar">
+
+        <div id="apt-id-group" style="display: none; margin-top: 8px;">
+          <label class="form-label" data-i18n="apt_id_prompt">Appointment ID (optional)</label>
+          <input type="text" id="auth-apt-id" class="form-input" placeholder="e.g. APT-1001" value="APT-1001">
+        </div>
+
+        <button id="btn-request-otp" class="btn btn-primary" style="margin-top: 12px;">Request OTP</button>
+      </div>
+
+      <div id="otp-step-2" class="form-group hidden">
+        <p class="text-muted" data-i18n="demo_otp_note">Demo OTP is 123456</p>
+        <label class="form-label" data-i18n="enter_otp">Enter OTP code</label>
+        <input type="text" id="auth-otp" class="form-input" placeholder="123456" value="123456">
+        <button id="btn-verify-otp" class="btn btn-primary" style="margin-top: 12px;" data-i18n="verify">Verify & Start Visit</button>
+      </div>
+
+      <div id="auth-error" class="text-danger" style="margin-top: 8px;"></div>
+    </section>
+
+    <!-- SCREEN 3: Emergency -->
+    <section id="screen-emergency" class="screen card hidden full-width">
+      <div class="status-badge status-danger" style="font-size: 16px; padding: 8px 16px;">
+        <span class="status-dot"></span>
+        <span data-i18n="emergency_title">Emergency Care</span>
+      </div>
+      <p data-i18n="emergency_desc">Please proceed directly to the Emergency Room on the Ground Floor.</p>
+      
+      <button id="btn-emergency-call" class="btn btn-danger" style="font-size: 18px;">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span data-i18n="call_staff">Call hospital staff</span> (+1-800-555-0199)
+      </button>
+
+      <div class="map-container" id="emergency-map-container" style="margin-top: 12px;"></div>
+      <ul class="step-list" id="emergency-steps" style="margin-top: 12px;"></ul>
+    </section>
+
+    <!-- SCREEN 4: Directions Search -->
+    <section id="screen-directions" class="screen card hidden">
+      <h2 data-i18n="find_doctor">Find a Doctor or Department</h2>
+      <input type="text" id="directions-search" class="form-input" placeholder="Search doctor, room, or department...">
+      <div id="doctors-dir-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;"></div>
+      <ul class="step-list" id="directions-steps" style="margin-top: 12px;"></ul>
+    </section>
+
+    <!-- SCREEN 5: Active Patient Main Screen -->
+    <section id="screen-patient" class="screen hidden">
+      
+      <!-- Top Assistant Panel -->
+      <div class="assistant-panel full-width">
+        <div class="assistant-controls">
+          <button id="mute-btn" class="icon-btn" title="Toggle Voice Mute">
+            <span id="mute-icon">🔊</span>
+          </button>
+        </div>
+        <div class="assistant-canvas-container">
+          <canvas id="nurse-canvas" class="hidden"></canvas>
+          <div id="nurse-2d-fallback" class="nurse-2d-fallback">
+            <img src="nurse2d.svg" alt="Nurse Assistant">
+          </div>
+        </div>
+      </div>
+
+      <div class="patient-grid" style="margin-top: 16px;">
+
+        <!-- NOW Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 data-i18n="now">Now</h2>
+            <button class="btn btn-secondary btn-sm" onclick="window.location.href='tel:+18005550199'">
+              <span data-i18n="talk_to_staff">Talk to staff</span>
+            </button>
+          </div>
+          <div id="now-card-body"></div>
+        </div>
+
+        <!-- DIRECTIONS Card -->
+        <div class="card">
+          <div class="card-header">
+            <h2 data-i18n="directions_title">Directions</h2>
+            <label style="font-size: 13px; display: flex; align-items: center; gap: 4px;">
+              <input type="checkbox" id="accessible-toggle">
+              <span data-i18n="accessible_route">Step-free route</span>
+            </label>
+          </div>
+          
+          <select id="location-selector" class="form-select" style="font-size: 14px; min-height: 38px;"></select>
+
+          <div id="map-container" class="map-container"></div>
+          <ul id="patient-steps" class="step-list" style="margin-top: 8px;"></ul>
+        </div>
+
+        <!-- YOUR VISIT Timeline Card -->
+        <div class="card">
+          <h2 data-i18n="your_visit">Your Visit</h2>
+          <div id="timeline-container" class="timeline"></div>
+        </div>
+
+        <!-- ASSISTANT CHAT Card -->
+        <div class="card chat-box">
+          <h2 data-i18n="chat_title">Assistant Chat</h2>
+          <div id="chat-messages" class="chat-messages">
+            <div class="msg msg-bot">Hello! I am your hospital assistant. How can I help you today?</div>
+          </div>
+          <div class="quick-replies">
+            <button class="quick-reply-btn" data-msg="Where do I go next?" data-i18n="where_next">Where do I go next?</button>
+            <button class="quick-reply-btn" data-msg="What's pending?" data-i18n="whats_pending">What's pending?</button>
+            <button class="quick-reply-btn" data-msg="How long is the wait?" data-i18n="how_long_wait">How long is the wait?</button>
+            <button class="quick-reply-btn" data-msg="Find a doctor" data-i18n="find_doctor">Find a doctor</button>
+          </div>
+          <div class="chat-input-row">
+            <input type="text" id="chat-input" class="form-input" style="flex:1;" placeholder="Ask a question...">
+            <button id="chat-send-btn" class="btn btn-primary" data-i18n="send">Send</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SCREEN 6: Discharge Summary -->
+    <section id="screen-discharge" class="screen card hidden">
+      <h1 data-i18n="discharge_title">Visit Completed</h1>
+      <p data-i18n="discharge_desc">Thank you for visiting City General Hospital. Please leave your feedback:</p>
+      
+      <div style="display: flex; gap: 8px; margin: 12px 0;">
+        <button class="btn btn-secondary star-btn" data-star="1" onclick="window.selectStar(this, 1)">1 ⭐</button>
+        <button class="btn btn-secondary star-btn" data-star="2" onclick="window.selectStar(this, 2)">2 ⭐</button>
+        <button class="btn btn-secondary star-btn" data-star="3" onclick="window.selectStar(this, 3)">3 ⭐</button>
+        <button class="btn btn-secondary star-btn" data-star="4" onclick="window.selectStar(this, 4)">4 ⭐</button>
+        <button class="btn btn-secondary star-btn selected" data-star="5" onclick="window.selectStar(this, 5)">5 ⭐</button>
+      </div>
+
+      <textarea id="feedback-text" class="form-textarea" placeholder="Optional feedback comments..."></textarea>
+      <button id="btn-submit-feedback" class="btn btn-primary" style="margin-top: 12px;" data-i18n="submit_feedback">Submit Feedback</button>
+    </section>
+
+  </main>
+
+  <script type="module" src="app.js"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log("SW reg failed", err));
+    }
+  </script>
+</body>
+</html>

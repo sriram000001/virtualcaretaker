@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Department Queue Dashboard - City General Hospital</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 15px;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th {
+      background-color: var(--bg);
+      font-weight: 600;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="top-bar">
+    <a href="#" class="brand">
+      <svg class="brand-cross" viewBox="0 0 24 24"><path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z" fill="currentColor"/></svg>
+      <span>Department Dashboard - City General Hospital</span>
+    </a>
+    <a href="desk.html" class="btn btn-secondary btn-sm">&larr; Front Desk</a>
+  </header>
+
+  <main class="container" style="padding-top: 24px;">
+
+    <section class="card">
+      <div class="flex-between">
+        <h2>Active Department Queue</h2>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label class="form-label" style="margin: 0;">Department:</label>
+          <select id="dept-selector" class="form-select" style="min-height: 40px;">
+            <option value="registration">Registration Desk</option>
+            <option value="consultation">Doctor Consultations</option>
+            <option value="diagnostics">Diagnostics & Lab</option>
+            <option value="pharmacy">Pharmacy</option>
+            <option value="billing">Billing Desk</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto; margin-top: 16px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Token / Visit</th>
+              <th>Patient Name</th>
+              <th>Phone</th>
+              <th>Wait Time</th>
+              <th>Status</th>
+              <th>Assigned Doctor</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="queue-tbody">
+            <!-- Loaded dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module">
+    import { loadDashboard } from './staff.js';
+    document.addEventListener("DOMContentLoaded", loadDashboard);
+  </script>
+</body>
+</html>
